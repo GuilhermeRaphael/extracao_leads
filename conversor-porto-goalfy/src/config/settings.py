@@ -1,5 +1,3 @@
-import json
-import os
 from datetime import datetime
 from pathlib import Path
 
@@ -7,33 +5,24 @@ from src.utils.tratamento_vinculo import tratar_nome_produto_vinculo
 
 
 def obter_caminho_dropbox() -> Path:
-    """Detecta automaticamente o caminho da pasta raiz do Dropbox
-    no computador de qualquer usuário (ex: C:/Users/NomeUsuario/Dropbox).
-    """
-    caminhos_config = [
-        Path(os.path.expandvars(r"%LOCALAPPDATA%\Dropbox\info.json")),
-        Path(os.path.expandvars(r"%APPDATA%\Dropbox\info.json")),
-        Path.home() / ".dropbox" / "info.json",
+    """Retorna o caminho do Dropbox local ou uma pasta temporaria na nuvem."""
+    # Lista de caminhos locais comuns do Windows
+    caminhos_locais = [
+        Path.home() / "Dropbox",
+        Path(
+            "C:/Users/Inri Corretora 18/Dropbox"
+        ),  # Ajuste com seu caminho exato se necessario
     ]
 
-    for config_path in caminhos_config:
-        if config_path.exists():
-            try:
-                with open(config_path, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    for key in ["personal", "business"]:
-                        if key in data:
-                            return Path(data[key]["path"])
-            except Exception:
-                pass
+    # 1. Tenta encontrar a pasta local se estiver rodando no seu computador
+    for caminho in caminhos_locais:
+        if caminho.exists():
+            return caminho
 
-    caminho_padrao = Path.home() / "GOALFY"
-    if caminho_padrao.exists():
-        return caminho_padrao
-
-    raise FileNotFoundError(
-        "Não foi possível localizar a pasta do GOALFY neste computador."
-    )
+    # 2. Se estiver rodando no Streamlit Cloud (nuvem), cria uma pasta temporaria de saida
+    caminho_nuvem = Path("/tmp/goalfy_exports")
+    caminho_nuvem.mkdir(parents=True, exist_ok=True)
+    return caminho_nuvem
 
 
 # 1. Pasta Raiz do Dropbox detectada dinamicamente no PC do usuário
