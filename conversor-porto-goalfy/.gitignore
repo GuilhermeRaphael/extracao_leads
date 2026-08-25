@@ -1,0 +1,10 @@
+# Python / Venv
+__pycache__/
+*.py[cod]
+venv/
+.env
+
+# Dados e Arquivos Gerados
+data/output/*.xlsx
+data/temp/*
+!.gitkeep
