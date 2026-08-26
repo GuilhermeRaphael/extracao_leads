@@ -8,3 +8,7 @@ venv/
 data/output/*.xlsx
 data/temp/*
 !.gitkeep
+
+dist/
+build/
+*.spec
