@@ -1,3 +1,5 @@
+import os
+import sys
 import tkinter as tk
 from tkinter import messagebox
 
@@ -6,11 +8,27 @@ from src.controllers.converter_controller import processar_conversao_json
 from src.services.formatacao_service import gerar_relatorio_formatacao
 
 
+def obter_caminho_recurso(caminho_relativo):
+    """Obtém o caminho absoluto para o recurso, funciona para dev e para o PyInstaller"""
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, caminho_relativo)
+
+
 class AppConversorTkinter(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Conversor Json -> Goalfy")
-        self.iconbitmap("raio.ico")
+
+        # Tratamento seguro do ícone para o PyInstaller
+        try:
+            caminho_ico = obter_caminho_recurso("raio.ico")
+            self.iconbitmap(caminho_ico)
+        except Exception:
+            pass
+
         self.geometry("850x750")
         self.resizable(True, True)
 
@@ -186,6 +204,7 @@ class AppConversorTkinter(tk.Tk):
             insertbackground="white",
             state="disabled",
             relief="flat",
+            wrap="word",  # Quebra o texto suavemente sem cortar palavras
         )
         self.txt_resultado.pack(fill="both", expand=True)
 
@@ -287,7 +306,7 @@ class AppConversorTkinter(tk.Tk):
 
         if total_ignorados > 0:
             self.escrever_log(
-                f"ℹ️ {total_ignorados} registro(s) ignorados (Status GDO diferente de 7)."
+                f"ℹ️ {total_ignorados} registro(s) ignorados (Status GDO inválido/não permitido)."
             )
 
         if todos_duplicados:

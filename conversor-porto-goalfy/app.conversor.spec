@@ -5,7 +5,7 @@ a = Analysis(
     ['app.conversor.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('raio.ico', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
