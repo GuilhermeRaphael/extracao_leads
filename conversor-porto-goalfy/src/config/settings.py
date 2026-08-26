@@ -1,3 +1,5 @@
+import json
+import os
 from datetime import datetime
 from pathlib import Path
 
@@ -5,24 +7,33 @@ from src.utils.tratamento_vinculo import tratar_nome_produto_vinculo
 
 
 def obter_caminho_dropbox() -> Path:
-    """Retorna o caminho do Dropbox local ou uma pasta temporaria na nuvem."""
-    # Lista de caminhos locais comuns do Windows
-    caminhos_locais = [
-        Path.home() / "Dropbox",
-        Path(
-            "C:/Users/Inri Corretora 18/Dropbox"
-        ),  # Ajuste com seu caminho exato se necessario
+    """Detecta automaticamente o caminho da pasta raiz do Dropbox
+    no computador de qualquer usuário (ex: C:/Users/NomeUsuario/Dropbox).
+    """
+    caminhos_config = [
+        Path(os.path.expandvars(r"%LOCALAPPDATA%\Dropbox\info.json")),
+        Path(os.path.expandvars(r"%APPDATA%\Dropbox\info.json")),
+        Path.home() / ".dropbox" / "info.json",
     ]
 
-    # 1. Tenta encontrar a pasta local se estiver rodando no seu computador
-    for caminho in caminhos_locais:
-        if caminho.exists():
-            return caminho
+    for config_path in caminhos_config:
+        if config_path.exists():
+            try:
+                with open(config_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    for key in ["personal", "business"]:
+                        if key in data:
+                            return Path(data[key]["path"])
+            except Exception:
+                pass
 
-    # 2. Se estiver rodando no Streamlit Cloud (nuvem), cria uma pasta temporaria de saida
-    caminho_nuvem = Path("/tmp/goalfy_exports")
-    caminho_nuvem.mkdir(parents=True, exist_ok=True)
-    return caminho_nuvem
+    caminho_padrao = Path.home() / "GOALFY"
+    if caminho_padrao.exists():
+        return caminho_padrao
+
+    raise FileNotFoundError(
+        "Não foi possível localizar a pasta do GOALFY neste computador."
+    )
 
 
 # 1. Pasta Raiz do Dropbox detectada dinamicamente no PC do usuário
@@ -65,7 +76,7 @@ PRODUTOS_CONFIG = {
         "susep": "CMHE2J",
         "subpasta": r"GOALFY\INRI\INRI - PORTATEIS",
     },
-    "RESID - INRI": {
+    "RESIDENCIAL - INRI": {
         "tipo": "INRI",
         "susep": "CMHE2J",
         "subpasta": r"GOALFY\INRI\INRI - RESID",
@@ -110,7 +121,7 @@ PRODUTOS_CONFIG = {
         "susep": "CMN32J",
         "subpasta": r"GOALFY\ICX\ICX - MOTO",
     },
-    "RESID - ICX": {
+    "RESIDENCIAL - ICX": {
         "tipo": "ICX",
         "susep": "CMN32J",
         "subpasta": r"GOALFY\ICX\ICX - RESID",

@@ -1,7 +1,7 @@
 import json
 import re
 
-# 1. Altere a importação para usar STATUS_GDO_PERMITIDOS e as funções auxiliares do settings
+# 1. Importações das configurações e auxiliares
 from src.config.settings import (
     PROGRAMA_MAP,
     STATUS_GDO_PERMITIDOS,
@@ -47,7 +47,7 @@ def limpar_observacao(obs_raw) -> str:
     if obs_str.lower() in ["undefined", "null", "none"]:
         return ""
 
-    # 1. Remove qualquer menção à corretora indesejada (incluindo o prefixo '>>', códigos e variações)
+    # 1. Remove qualquer menção à corretora indesejada
     obs_str = re.sub(
         r"(>>\s*)?CMHE2J\s*-\s*INRI CORRETORA DE SEGUROS E CONSORCIO LTDA",
         "",
@@ -99,7 +99,7 @@ def extrair_e_formatar_itens(json_texto: str, nome_produto_selecionado: str):
             ignorados_count += 1
             continue
 
-        # Determina o produto dinamicamente conforme a regra (se for PROPOSTA/VÍNCULO pega do JSON, senão da tela)
+        # Determina o produto dinamicamente conforme a regra
         produto_final = determinar_nome_produto_coluna(item, nome_produto_selecionado)
 
         # Regra de Empresa e Susep baseada no produto selecionado na tela
@@ -134,9 +134,17 @@ def extrair_e_formatar_itens(json_texto: str, nome_produto_selecionado: str):
         # Determina o valor da coluna GDO ("NOVAS OPORTUNIDADES" ou "PROPOSTA")
         gdo_valor = determinar_gdo_coluna(item)
 
+        # --- REGRA DA ADIÇÃO DO (VINCULO) NO NOME ---
+        nome_cliente_base = upper_val(item.get("nomeCliente")).strip()
+        if "VINCULO" in modalidade and not nome_cliente_base.startswith("(VINCULO)"):
+            nome_final = f"(VINCULO) {nome_cliente_base}"
+        else:
+            nome_final = nome_cliente_base
+        # ---------------------------------------------
+
         registro = {
             "Nº": "",
-            "NOME ": upper_val(item.get("nomeCliente")),
+            "NOME ": nome_final,
             "TELEFONE": formatar_telefone(tel_bruto),
             "CPF": formatar_cpf_cic(item.get("cpfCnpjCliente")),
             "E-MAIL": upper_val(item.get("emailCliente")),
