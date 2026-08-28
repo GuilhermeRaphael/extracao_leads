@@ -23,7 +23,9 @@ def processar_conversao_json(json_texto: str, produto_selecionado: str) -> dict:
         }
 
     # 1. Salva na planilha matriz do Dropbox
-    salvos_count, duplicados = salvar_registros_na_matriz(caminho_excel, registros)
+    salvos_count, duplicados = salvar_registros_na_matriz(
+        caminho_excel, registros, produto_selecionado
+    )
 
     # 2. Retorna os dados processados para acúmulo no app.py
     return {

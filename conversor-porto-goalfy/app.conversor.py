@@ -4,8 +4,8 @@ import tkinter as tk
 from tkinter import messagebox
 
 from src.config.settings import PRODUTOS_CORRETORA
-from src.controllers.converter_controller import processar_conversao_json
-from src.services.formatacao_service import gerar_relatorio_formatacao
+
+PLACEHOLDER_PRODUTO = "SELECIONE O PRODUTO"
 
 
 def obter_caminho_recurso(caminho_relativo):
@@ -77,15 +77,15 @@ class AppConversorTkinter(tk.Tk):
             bg="#0e1117",
         ).pack(anchor="w")
 
-        lista_produtos = (
+        lista_produtos_reais = (
             list(PRODUTOS_CORRETORA)
             if isinstance(PRODUTOS_CORRETORA, (list, dict, tuple))
             else []
         )
+        lista_produtos = [PLACEHOLDER_PRODUTO] + lista_produtos_reais
 
         self.var_produto = tk.StringVar(self)
-        if lista_produtos:
-            self.var_produto.set(lista_produtos[0])
+        self.var_produto.set(PLACEHOLDER_PRODUTO)
 
         # Menu suspenso estilizado em Dark Mode
         self.opt_produto = tk.OptionMenu(
@@ -251,6 +251,12 @@ class AppConversorTkinter(tk.Tk):
     def cb_salvar_lote(self):
         produto = self.var_produto.get()
 
+        if produto == PLACEHOLDER_PRODUTO:
+            messagebox.showerror(
+                "Erro", "Selecione um PRODUTO antes de salvar o lote na matriz."
+            )
+            return
+
         texto = self.txt_json.get("1.0", tk.END).strip()
         if texto:
             self.lote_jsons.append(texto)
@@ -265,6 +271,12 @@ class AppConversorTkinter(tk.Tk):
 
         self.limpar_log()
         self.escrever_log("⚙️ Processando lote de JSONs...")
+
+        # Import tardio (lazy import): pandas/openpyxl só são carregados aqui,
+        # no momento do salvamento, e não na abertura da janela. Isso reduz
+        # bastante o tempo de inicialização do app.
+        from src.controllers.converter_controller import processar_conversao_json
+        from src.services.formatacao_service import gerar_relatorio_formatacao
 
         total_salvos = 0
         total_ignorados = 0

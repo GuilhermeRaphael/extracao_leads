@@ -116,6 +116,11 @@ PRODUTOS_CONFIG = {
         "susep": "CMN32J",
         "subpasta": r"GOALFY\ICX\ICX - CELULAR",
     },
+    "CONSORCIO - ICX": {
+        "tipo": "ICX",
+        "susep": "CMN32J",
+        "subpasta": r"GOALFY\ICX\ICX - CONSORCIO",
+    },
     "MOTO - ICX": {
         "tipo": "ICX",
         "susep": "CMN32J",

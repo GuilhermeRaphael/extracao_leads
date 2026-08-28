@@ -30,14 +30,20 @@ def gerar_relatorio_formatacao(
     pasta_dia = agora.strftime("%d-%m-%Y")
     hora_formatada = agora.strftime("%Hh%M")
 
-    nome_prod = f" {produto_selecionado.strip()}" if produto_selecionado else ""
+    # Limpa o nome do produto para usar no caminho do diretório
+    prod_limpo = produto_selecionado.strip().upper() if produto_selecionado else ""
+    pasta_produto = prod_limpo if prod_limpo else "GERAL"
+
+    nome_prod = f" {prod_limpo}" if prod_limpo else ""
     nome_arquivo = f"FORMATAÇÃO{nome_prod} {pasta_dia} {hora_formatada}.xlsx"
 
     desktop_path = obter_caminho_desktop()
-    caminho_pasta_dia = desktop_path / "FORMATAÇÃO" / pasta_dia
-    caminho_pasta_dia.mkdir(parents=True, exist_ok=True)
 
-    caminho_excel = caminho_pasta_dia / nome_arquivo
+    # Estrutura de pastas: FORMATAÇÃO -> Dia -> Nome do produto
+    caminho_pasta_final = desktop_path / "FORMATAÇÃO" / pasta_dia / pasta_produto
+    caminho_pasta_final.mkdir(parents=True, exist_ok=True)
+
+    caminho_excel = caminho_pasta_final / nome_arquivo
 
     # Busca segura aceitando 'NOME ', 'NOME', 'nomeCliente', 'CPF', 'cpfCnpjCliente', etc.
     dados_simplificados = []
@@ -96,8 +102,18 @@ def gerar_relatorio_formatacao(
 
     # ABA 2: PRINT
     ws_print = wb.create_sheet(title="PRINT")
-    ws_print.views.sheetView[0].showGridLines = True
+
+    # Remove as linhas de grade e ajusta o zoom para 55%
+    ws_print.views.sheetView[0].showGridLines = False
+    ws_print.sheet_view.zoomScale = 55
 
     wb.save(caminho_excel)
+
+    # Abre a planilha automaticamente na tela assim que ela é gerada,
+    # para não esquecer de conferir/usar o arquivo.
+    try:
+        os.startfile(caminho_excel)  # Funciona apenas no Windows
+    except Exception:
+        pass
 
     return caminho_excel

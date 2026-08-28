@@ -1,5 +1,6 @@
 import json
 import re
+from datetime import datetime
 
 # 1. Importações das configurações e auxiliares
 from src.config.settings import (
@@ -164,6 +165,7 @@ def extrair_e_formatar_itens(json_texto: str, nome_produto_selecionado: str):
             "OBSERVAÇÕES": limpar_observacao(item.get("observacoes")),
             "GDO": gdo_valor,
             "idDynamics": str(item.get("idOportunidadeDynamics", "")),
+            "DATA/HORA EXECUÇÃO": datetime.now(),
         }
 
         registros_validos.append(registro)
